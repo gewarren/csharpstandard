@@ -12,7 +12,7 @@ As described in the following subclauses, variables are either ***initially assi
 
 ### 9.2.1 General
 
-C# defines the following categories of variables: static variables, instance variables, array elements, value parameters, reference parameters, output parameters, local variables, and discards. The subclauses that follow describe each of these categories.
+C# defines the following categories of variables: static variables, instance variables, array elements, value parameters, reference parameters, output parameters, and local variables. The subclauses that follow describe each of these categories.
 
 > *Example*: In the following code
 >
@@ -147,12 +147,6 @@ A local variable introduced by a *local_variable_declaration* is not automatical
 > Within the scope of a local variable, it is a compile-time error to refer to that local variable in a textual position that precedes its *local_variable_declarator*.
 >
 > *end note*
-
-### §discards-new-clause Discards
-
-In certain contexts, a programmer is required to define a variable whose value they don't care about and don't intend to use. Discards simplify the code in such situations. A *discard*, which is represented by the identifier `_`, is a predefined variable that is never definitely assigned ([§9.4](variables.md#94-definite-assignment)) and need not occupy any storage. Multiple discards may exist in the same scope, with each having the same or different types, or no type at all. With some restrictions, a discard may be used in the same scope as an explicitly declared variable named `_`.
-
-For details of using discards when deconstructing tuples, see §deconstruction-expressions-new-clause. When calling methods with `out` parameters, see [§14.6.2.4](classes.md#14624-output-parameters). In a pattern matching operation with the `is` and `switch` statements, see [§11.11.11](expressions.md#111111-the-is-operator) and [§12.8.3](statements.md#1283-the-switch-statement). As the left operand of a simple assignment, see [§11.18.2](expressions.md#11182-simple-assignment).
 
 ## 9.3 Default values
 
@@ -772,7 +766,7 @@ For a *lambda_expression* or *anonymous_method_expression* *expr* with a body (e
 
 ## 9.5 Variable references
 
-A *variable_reference* is an *expression* that is classified as a variable. Except in the case of a discard (§discards-new-clause), a *variable_reference* denotes a storage location that can be accessed both to fetch the current value and to store a new value.
+A *variable_reference* is an *expression* that is classified as a variable. A *variable_reference* denotes a storage location that can be accessed both to fetch the current value and to store a new value.
 
 ```ANTLR
 variable_reference
