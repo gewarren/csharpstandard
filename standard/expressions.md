@@ -153,7 +153,7 @@ The precedence of an operator is established by the definition of its associated
 > |  [§11.12](expressions.md#1112-logical-operators)             | Logical OR                       | `\|`
 > |  [§11.13](expressions.md#1113-conditional-logical-operators)             | Conditional AND                  | `&&`
 > |  [§11.13](expressions.md#1113-conditional-logical-operators)             | Conditional OR                   | `\|\|`
-> |  [§11.14](expressions.md#1114-the-null-coalescing-operator)             | Null coalescing                  | `??`
+> |  [§11.14](expressions.md#1114-the-null-coalescing-operator)             | Null coalescing                  | `??` `throw x`
 > |  [§11.15](expressions.md#1115-conditional-operator)             | Conditional                      | `?:`
 > |  [§11.18](expressions.md#1118-assignment-operators) and [§11.16](expressions.md#1116-anonymous-function-expressions)  | Assignment and lambda expression | `=` `*=` `/=` `%=` `+=` `-=` `<<=` `>>=` `&=` `^=` `\|=` `=>`
 >
@@ -2920,19 +2920,9 @@ throw_expression
     ;
 ```
 
-A *throw_expression* throws the value produced by evaluating the *null_coalescing_expression*, which shall denote a value of the class type `System.Exception`, a value of a class type that derives from `System.Exception` or a value of a type parameter type that has `System.Exception` (or a subclass thereof) as its effective base class. If evaluation of the expression produces `null`, a `System.NullReferenceException` shall be thrown instead.
+A *throw_expression* throws the value produced by evaluating the *null_coalescing_expression*. The expression shall be implicitly convertible to `System.Exception`, and the result of evaluating the expression is converted to `System.Exception` before being thrown. The behavior at runtime of the evaluation of a *throw expression* is the same as specified for a *throw statement* ([§12.10.6](statements.md#12106-the-throw-statement)).
 
-The behavior at runtime of the evaluation of a *throw expression* is the same as specified for a *throw statement* ([§12.10.6](statements.md#12106-the-throw-statement)).
-
-The type rules are as follows:
-
-- A *throw_expression* has no type.
-- A *throw_expression* is convertible to every type by an implicit conversion.
-
-The flow-analysis rules are as follows:
-
-- For every variable *v*, *v* is definitely assigned before the *null_coalescing_expression* of a *throw_expression* iff it is definitely assigned before the *throw_expression*.
-- For every variable *v*, *v* is definitely assigned after *throw_expression*.
+A *throw_expression* has no type. A *throw_expression* is convertible to every type by an *implicit throw conversion*.
 
 A *throw expression* shall only occur in the following syntactic contexts:
 
