@@ -12,9 +12,10 @@ A *class_declaration* is a *type_declaration* ([§13.7](namespaces.md#137-type-d
 
 ```ANTLR
 class_declaration
-  : attributes? class_modifier* 'partial'? 'class' identifier type_parameter_list?
-    class_base? type_parameter_constraints_clause* class_body ';'?
-  ;
+    : attributes? class_modifier* 'partial'? 'class' identifier
+        type_parameter_list? class_base? type_parameter_constraints_clause*
+        class_body ';'?
+    ;
 ```
 
 A *class_declaration* consists of an optional set of *attributes* ([§21](attributes.md#21-attributes)), followed by an optional set of *class_modifier*s ([§14.2.2](classes.md#1422-class-modifiers)), followed by an optional `partial` modifier ([§14.2.7](classes.md#1427-partial-declarations)), followed by the keyword `class` and an *identifier* that names the class, followed by an optional *type_parameter_list* ([§14.2.3](classes.md#1423-type-parameters)), followed by an optional *class_base* specification ([§14.2.4](classes.md#1424-class-base-specification)), followed by an optional set of *type_parameter_constraints_clause*s ([§14.2.5](classes.md#1425-type-parameter-constraints)), followed by a *class_body* ([§14.2.6](classes.md#1426-class-body)), optionally followed by a semicolon.
@@ -146,13 +147,13 @@ A type parameter is a simple identifier that denotes a placeholder for a type ar
 
 ```ANTLR
 type_parameter_list
-  : '<' type_parameters '>'
+    : '<' type_parameters '>'
   ;
 
 type_parameters
-  : attributes? type_parameter
-  | type_parameters ',' attributes? type_parameter
-  ;
+    : attributes? type_parameter
+    | type_parameters ',' attributes? type_parameter
+    ;
 ```
 
 *type_parameter* is defined in [§8.5](types.md#85-type-parameters).
@@ -169,14 +170,14 @@ A class declaration may include a *class_base* specification, which defines the 
 
 ```ANTLR
 class_base
-  : ':' class_type
-  | ':' interface_type_list
-  | ':' class_type ',' interface_type_list
-  ;
+    : ':' class_type
+    | ':' interface_type_list
+    | ':' class_type ',' interface_type_list
+    ;
 
 interface_type_list
-  : interface_type (',' interface_type)*
-  ;
+    : interface_type (',' interface_type)*
+    ;
 ```
 
 #### 14.2.4.2 Base classes
@@ -213,9 +214,15 @@ The base class specified in a class declaration can be a constructed class type 
 >
 > ```csharp
 > class Base<T> {}
-> class Extend : Base<int>     // Valid, non-constructed class with constructed base class
-> class Extend<V> : V {}       // Error, type parameter used as base class
-> class Extend<V> : Base<V> {} // Valid, type parameter used as type argument for base class
+>
+> // Valid, non-constructed class with constructed base class
+> class Extend : Base<int>
+>
+> // Error, type parameter used as base class
+> class Extend<V> : V {}
+>
+> // Valid, type parameter used as type argument for base class
+> class Extend<V> : Base<V> {}
 > ```
 >
 > *end example*
@@ -631,8 +638,8 @@ The *class_body* of a class defines the members of that class.
 
 ```ANTLR
 class_body
-  : '{' class_member_declaration* '}'
-  ;
+    : '{' class_member_declaration* '}'
+    ;
 ```
 
 ### 14.2.7 Partial declarations
@@ -956,10 +963,10 @@ When a field, method, property, event, indexer, constructor, or finalizer declar
 >     static void Main()
 >     {
 >         Test t = new Test();
->         t.x = 1;             // Ok
->         t.y = 1;             // Error, cannot access static member through instance
->         Test.x = 1;          // Error, cannot access instance member through type
->         Test.y = 1;          // Ok
+>         t.x = 1;       // Ok
+>         t.y = 1;       // Error, cannot access static member through instance
+>         Test.x = 1;    // Error, cannot access instance member through type
+>         Test.y = 1;    // Ok
 >     }
 > }
 > ```
@@ -1214,10 +1221,10 @@ Every type declaration contained within a generic class declaration is implicitl
 >
 >     static void F(T t)
 >     {
->         Outer<T>.Inner<string>.F(t, "abc");         // These two statements have
->         Inner<string>.F(t, "abc");                  // the same effect
->         Outer<int>.Inner<string>.F(3, "abc");       // This type is different
->         Outer.Inner<string>.F(t, "abc");            // Error, Outer needs type arg
+>         Outer<T>.Inner<string>.F(t, "abc");    // These two statements have
+>         Inner<string>.F(t, "abc");             // the same effect
+>         Outer<int>.Inner<string>.F(3, "abc");  // This type is different
+>         Outer.Inner<string>.F(t, "abc");       // Error, Outer needs type arg
 >     }
 > }
 > ```
@@ -1430,9 +1437,7 @@ Constants are permitted to depend on other constants within the same program as 
 
 Constant declarations may depend on constants from other programs, but such dependencies are only possible in one direction.
 
-> *Example*: Referring to the example above, if `A` and `B` were declared in separate programs, it would be possible for `A.X` to depend on `B.Z`, but `B.Z` could then not simultaneously depend on `A.Y`.
->
-> *end example*
+> *Example*: Referring to the example above, if `A` and `B` were declared in separate programs, it would be possible for `A.X` to depend on `B.Z`, but `B.Z` could then not simultaneously depend on `A.Y`. *end example*
 
 ## 14.5 Fields
 
@@ -1622,7 +1627,8 @@ These restrictions ensure that all threads will observe volatile writes performe
 >         // Run Thread2() in a new thread
 >         new Thread(new ThreadStart(Thread2)).Start();    
 >
->         // Wait for Thread2() to signal that it has a result by setting finished to true.
+>         // Wait for Thread2() to signal that it has a result
+>         // by setting finished to true.
 >         for (;;)
 >         {
 >             if (finished)
@@ -1870,8 +1876,9 @@ method_declaration
     ;
 
 method_header
-    : attributes? method_modifier* 'partial'? return_type member_name type_parameter_list?
-      '(' formal_parameter_list? ')' type_parameter_constraints_clause*
+    : attributes? method_modifier* 'partial'? return_type member_name
+      type_parameter_list? '(' formal_parameter_list? ')'
+      type_parameter_constraints_clause*
     ;
 
 method_modifier
@@ -2179,9 +2186,7 @@ Output parameters are typically used in methods that produce multiple return val
 
 A parameter declared with a `params` modifier is a parameter array. If a formal parameter list includes a parameter array, it shall be the last parameter in the list and it shall be of a single-dimensional array type.
 
-> *Example*: The types `string[]` and `string[][]` can be used as the type of a parameter array, but the type `string[,]` can not.
->
-> *end example*
+> *Example*: The types `string[]` and `string[][]` can be used as the type of a parameter array, but the type `string[,]` can not. *end example*
 
 It is not possible to combine the `params` modifier with the modifiers `ref` and `out`.
 
@@ -2243,9 +2248,14 @@ When performing overload resolution, a method with a parameter array might be ap
 > using System;
 > class Test
 > {
->     static void F(params object[] a)    => Console.WriteLine("F(object[])");
->     static void F()                     => Console.WriteLine("F()");>
->     static void F(object a0, object a1) => Console.WriteLine("F(object,object)");
+>     static void F(params object[] a) =>
+>         Console.WriteLine("F(object[])");
+>
+>     static void F() =>
+>         Console.WriteLine("F()");>
+>
+>     static void F(object a0, object a1) =>
+>         Console.WriteLine("F(object,object)");
 >
 >     static void Main()
 >     {
@@ -2505,16 +2515,16 @@ A compile-time error occurs unless all of the following are true for an override
 >
 > class D : C<string>
 > {
->     public override string F() {...}                // Ok
->     public override C<string> G() {...}             // Ok
->     public override void H(C<T> x) {...}            // Error, should be C<string>
+>     public override string F() {...}            // Ok
+>     public override C<string> G() {...}         // Ok
+>     public override void H(C<T> x) {...}        // Error, should be C<string>
 > }
 >
 > class E<T,U> : C<U>
 > {
->     public override U F() {...}                     // Ok
->     public override C<U> G() {...}                  // Ok
->     public override void H(C<T> x) {...}            // Error, should be C<U>
+>     public override U F() {...}                 // Ok
+>     public override C<U> G() {...}              // Ok
+>     public override void H(C<T> x) {...}        // Error, should be C<U>
 > }
 > ```
 >
@@ -2741,7 +2751,7 @@ Partial methods may be defined in one part of a type declaration and implemented
 
 Partial methods shall not define access modifiers; they are implicitly private. Their return type shall be `void`, and their parameters shall not have the `out` modifier. The identifier partial is recognized as a contextual keyword ([§6.4.4](lexical-structure.md#644-keywords)) in a method declaration only if it appears immediately before the `void` keyword. A partial method cannot explicitly implement interface methods.
 
-There are two kinds of partial method declarations: If the body of the method declaration is a semicolon, the declaration is said to be a ***defining partial method declaration***. If the body is given as a *block*, the declaration is said to be an ***implementing partial method declaration***. Across the parts of a type declaration, there may be only one defining partial method declaration with a given signature, and there may be only one implementing partial method declaration with a given signature. If an implementing partial method declaration is given, a corresponding defining partial method declaration shall exist, and the declarations shall match as specified in the following:
+There are two kinds of partial method declarations: If the body of the method declaration is a semicolon, the declaration is said to be a ***defining partial method declaration***. If the body is other than a semicolon, the declaration is said to be an ***implementing partial method declaration***. Across the parts of a type declaration, there may be only one defining partial method declaration with a given signature, and there may be only one implementing partial method declaration with a given signature. If an implementing partial method declaration is given, a corresponding defining partial method declaration shall exist, and the declarations shall match as specified in the following:
 
 - The declarations shall have the same modifiers (although not necessarily in the same order), method name, number of type parameters and number of parameters.
 - Corresponding parameters in the declarations shall have the same modifiers (although not necessarily in the same order) and the same types (modulo differences in type parameter names).
@@ -2977,7 +2987,7 @@ When the effective return type of a method is not `void` and the method has an e
 > }
 > ```
 >
-> the value-returning `F` method results in a compile-time error because control can flow off the end of the method body. The `G` and `H` methods are correct because all possible execution paths end in a return statement that specifies a return value. The `I` method is correct, because its body is equivalent to a statement block with just a single return statement in it.
+> the value-returning `F` method results in a compile-time error because control can flow off the end of the method body. The `G` and `H` methods are correct because all possible execution paths end in a return statement that specifies a return value. The `I` method is correct, because its body is equivalent to a block with just a single return statement in it.
 >
 > *end example*
 
@@ -3055,9 +3065,9 @@ The *accessor_declarations* of a property specify the executable statements asso
 
 ```ANTLR
 accessor_declarations
-   : get_accessor_declaration set_accessor_declaration?
-   | set_accessor_declaration get_accessor_declaration?
-   ;
+    : get_accessor_declaration set_accessor_declaration?
+    | set_accessor_declaration get_accessor_declaration?
+    ;
 
 get_accessor_declaration
     : attributes? accessor_modifier? 'get' accessor_body
@@ -3077,6 +3087,7 @@ accessor_modifier
 
 accessor_body
     : block
+    | '=>' expression ';'
     | ';' 
     ;
 ```
@@ -3094,7 +3105,10 @@ The use of *accessor_modifier*s is governed by the following restrictions:
   - If the property or indexer has a declared accessibility of `internal` or `protected`, the *accessor_modifier* shall be `private`.
   - If the property or indexer has a declared accessibility of `private`, no *accessor_modifier* may be used.
 
-For `abstract` and `extern` properties, the *accessor_body* for each accessor specified is simply a semicolon. A non-abstract, non-extern property may also have the *accessor_body* for all accessors specified be a semicolon, in which case it is an ***automatically implemented property*** ([§14.7.4](classes.md#1474-automatically-implemented-properties)). An automatically implemented property shall have at least a get accessor. For the accessors of any other non-abstract, non-extern property, the *accessor_body* is a *block* that specifies the statements to be executed when the corresponding accessor is invoked.
+For `abstract` and `extern` properties, the *accessor_body* for each accessor specified is simply a semicolon. A non-abstract, non-extern property may also have the *accessor_body* for all accessors specified be a semicolon, in which case it is an ***automatically implemented property*** ([§14.7.4](classes.md#1474-automatically-implemented-properties)). An automatically implemented property shall have at least a get accessor. For the accessors of any other non-abstract, non-extern property, the *accessor_body* is either
+
+- a *block* that specifies the statements to be executed when the corresponding accessor is invoked; or
+- an expression body, which consists of `=>` followed by an *expression* and a semicolon, and denotes a single expression to be executed when the corresponding accessor is invoked.
 
 A get accessor corresponds to a parameterless method with a return value of the property type. Except as the target of an assignment, when a property is referenced in an expression, the get accessor of the property is invoked to compute the value of the property ([§11.2.2](expressions.md#1122-values-of-expressions)). The body of a get accessor shall conform to the rules for value-returning methods described in [§14.6.11](classes.md#14611-method-body). In particular, all `return` statements in the body of a get accessor shall specify an expression that is implicitly convertible to the property type. Furthermore, the endpoint of a get accessor shall not be reachable.
 
@@ -3378,7 +3392,7 @@ An auto-property may optionally have a *property_initializer*, which is applied 
 > *end example*
 <!-- markdownlint-disable MD028 -->
 
-<!-- markdownlint-enablesure MD028 -->
+<!-- markdownlint-enable MD028 -->
 > *Example*: In the following
 >
 > ```csharp
@@ -3610,37 +3624,38 @@ Events are declared using *event_declaration*s:
 
 ```ANTLR
 event_declaration
-  : attributes? event_modifier* 'event' type variable_declarators ';'
-  | attributes? event_modifier* 'event' type member_name '{' event_accessor_declarations '}'
-  ;
+    : attributes? event_modifier* 'event' type variable_declarators ';'
+    | attributes? event_modifier* 'event' type member_name
+        '{' event_accessor_declarations '}'
+    ;
 
 event_modifier
-  : 'new'
-  | 'public'
-  | 'protected'
-  | 'internal'
-  | 'private'
-  | 'static'
-  | 'virtual'
-  | 'sealed'
-  | 'override'
-  | 'abstract'
-  | 'extern'
-  | unsafe_modifier   // unsafe code support
-  ;
+    : 'new'
+    | 'public'
+    | 'protected'
+    | 'internal'
+    | 'private'
+    | 'static'
+    | 'virtual'
+    | 'sealed'
+    | 'override'
+    | 'abstract'
+    | 'extern'
+    | unsafe_modifier   // unsafe code support
+    ;
 
 event_accessor_declarations
-  : add_accessor_declaration remove_accessor_declaration
-  | remove_accessor_declaration add_accessor_declaration
-  ;
+    : add_accessor_declaration remove_accessor_declaration
+    | remove_accessor_declaration add_accessor_declaration
+    ;
 
 add_accessor_declaration
-  : attributes? 'add' block
-  ;
+    : attributes? 'add' block
+    ;
 
 remove_accessor_declaration
-  : attributes? 'remove' block
-  ;
+    : attributes? 'remove' block
+    ;
 ```
 
 *unsafe_modifier* ([§22.2](unsafe-code.md#222-unsafe-contexts)) is only available in unsafe code ([§22](unsafe-code.md#22-unsafe-code)).
@@ -3888,23 +3903,23 @@ indexer_declaration
     ;
 
 indexer_modifier
-  : 'new'
-  | 'public'
-  | 'protected'
-  | 'internal'
-  | 'private'
-  | 'virtual'
-  | 'sealed'
-  | 'override'
-  | 'abstract'
-  | 'extern'
-  | unsafe_modifier   // unsafe code support
-  ;
+    : 'new'
+    | 'public'
+    | 'protected'
+    | 'internal'
+    | 'private'
+    | 'virtual'
+    | 'sealed'
+    | 'override'
+    | 'abstract'
+    | 'extern'
+    | unsafe_modifier   // unsafe code support
+    ;
 
 indexer_declarator
-  : type 'this' '[' formal_parameter_list ']'
-  | type interface_type '.' 'this' '[' formal_parameter_list ']'
-  ;
+    : type 'this' '[' formal_parameter_list ']'
+    | type interface_type '.' 'this' '[' formal_parameter_list ']'
+    ;
 
 indexer_body
     : '{' accessor_declarations '}' 
@@ -4104,50 +4119,50 @@ An ***operator*** is a member that defines the meaning of an expression operator
 
 ```ANTLR
 operator_declaration
-  : attributes? operator_modifier+ operator_declarator operator_body
-  ;
+    : attributes? operator_modifier+ operator_declarator operator_body
+    ;
 
 operator_modifier
-  : 'public'
-  | 'static'
-  | 'extern'
-  | unsafe_modifier   // unsafe code support
-  ;
+    : 'public'
+    | 'static'
+    | 'extern'
+    | unsafe_modifier   // unsafe code support
+    ;
 
 operator_declarator
-  : unary_operator_declarator
-  | binary_operator_declarator
-  | conversion_operator_declarator
-  ;
+    : unary_operator_declarator
+    | binary_operator_declarator
+    | conversion_operator_declarator
+    ;
 
 unary_operator_declarator
-  : type 'operator' overloadable_unary_operator '(' fixed_parameter ')'
-  ;
+    : type 'operator' overloadable_unary_operator '(' fixed_parameter ')'
+    ;
 
 overloadable_unary_operator
-  : '+' | '-' | '!' | '~' | '++' | '--' | 'true' | 'false'
-  ;
+    : '+' | '-' | '!' | '~' | '++' | '--' | 'true' | 'false'
+    ;
 
 binary_operator_declarator
-  : type 'operator' overloadable_binary_operator '(' fixed_parameter ',' fixed_parameter ')'
-  ;
+    : type 'operator' overloadable_binary_operator
+        '(' fixed_parameter ',' fixed_parameter ')'
+    ;
 
 overloadable_binary_operator
-  : '+'  | '-'  | '*'  | '/'  | '%'  | '&' | '|' | '^'  | '<<' 
-  | right_shift | '==' | '!=' | '>' | '<' | '>=' | '<='
-  ;
+    : '+'  | '-'  | '*'  | '/'  | '%'  | '&' | '|' | '^'  | '<<' 
+    | right_shift | '==' | '!=' | '>' | '<' | '>=' | '<='
+    ;
 
 conversion_operator_declarator
-  : 'implicit' 'operator' type '(' fixed_parameter ')'
-  | 'explicit' 'operator' type '(' fixed_parameter ')'
-  ;
+    : 'implicit' 'operator' type '(' fixed_parameter ')'
+    | 'explicit' 'operator' type '(' fixed_parameter ')'
+    ;
 
 operator_body
-  : block
-  | '=>' expression ';'
-  | ';'
-  ;
-
+    : block
+    | '=>' expression ';'
+    | ';'
+    ;
 ```
 
 *unsafe_modifier* ([§22.2](unsafe-code.md#222-unsafe-contexts)) is only available in unsafe code ([§22](unsafe-code.md#22-unsafe-code)).
@@ -4212,8 +4227,8 @@ The `true` and `false` unary operators require pair-wise declaration. A compile-
 >     {
 >         IntVector iv1 = new IntVector(4); // Vector of 4 x 0
 >         IntVector iv2;
->         iv2 = iv1++;                      // iv2 contains 4 x 0, iv1 contains 4 x 1
->         iv2 = ++iv1;                      // iv2 contains 4 x 2, iv1 contains 4 x 2
+>         iv2 = iv1++;              // iv2 contains 4 x 0, iv1 contains 4 x 1
+>         iv2 = ++iv1;              // iv2 contains 4 x 2, iv1 contains 4 x 2
 >     }
 > }
 > ```
@@ -4277,9 +4292,7 @@ For the purposes of these rules, any type parameters associated with `S` or `T
 
 From the second rule, it follows that a conversion operator shall convert either to or from the class or struct type in which the operator is declared.
 
-> *Example*: It is possible for a class or struct type `C` to define a conversion from `C` to `int` and from `int` to `C`, but not from `int` to `bool`.
->
-> *end example*
+> *Example*: It is possible for a class or struct type `C` to define a conversion from `C` to `int` and from `int` to `C`, but not from `int` to `bool`. *end example*
 
 It is not possible to directly redefine a pre-defined conversion. Thus, conversion operators are not allowed to convert from or to `object` because implicit and explicit conversions already exist between `object` and all other types. Likewise, neither the source nor the target types of a conversion can be a base type of the other, since a conversion would then already exist. However, it *is* possible to declare operators on generic types that, for particular type arguments, specify conversions that already exist as pre-defined conversions.
 
@@ -4374,31 +4387,32 @@ An ***instance constructor*** is a member that implements the actions required t
 
 ```ANTLR
 constructor_declaration
-  : attributes? constructor_modifier* constructor_declarator constructor_body
-  ;
+    : attributes? constructor_modifier* constructor_declarator constructor_body
+    ;
 
 constructor_modifier
-  : 'public'
-  | 'protected'
-  | 'internal'
-  | 'private'
-  | 'extern'
-  | unsafe_modifier   // unsafe code support
-  ;
+    : 'public'
+    | 'protected'
+    | 'internal'
+    | 'private'
+    | 'extern'
+    | unsafe_modifier   // unsafe code support
+    ;
 
 constructor_declarator
-  : identifier '(' formal_parameter_list? ')' constructor_initializer?
-  ;
+    : identifier '(' formal_parameter_list? ')' constructor_initializer?
+    ;
 
 constructor_initializer
-  : ':' 'base' '(' argument_list? ')'
-  | ':' 'this' '(' argument_list? ')'
-  ;
+    : ':' 'base' '(' argument_list? ')'
+    | ':' 'this' '(' argument_list? ')'
+    ;
 
 constructor_body
-  : block
-  | ';'
-  ;
+    : block
+    | '=>' expression ';'
+    | ';'
+    ;
 ```
 
 *unsafe_modifier* ([§22.2](unsafe-code.md#222-unsafe-contexts)) is only available in unsafe code ([§22](unsafe-code.md#22-unsafe-code)).
@@ -4413,7 +4427,12 @@ Each of the types referenced in the *formal_parameter_list* of an instance const
 
 The optional *constructor_initializer* specifies another instance constructor to invoke before executing the statements given in the *constructor_body* of this instance constructor. This is described further in [§14.11.2](classes.md#14112-constructor-initializers).
 
-When a constructor declaration includes an `extern` modifier, the constructor is said to be an ***external constructor***. Because an external constructor declaration provides no actual implementation, its *constructor_body* consists of a semicolon. For all other constructors, the *constructor_body* consists of a *block*, which specifies the statements to initialize a new instance of the class. This corresponds exactly to the *block* of an instance method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
+When a constructor declaration includes an `extern` modifier, the constructor is said to be an ***external constructor***. Because an external constructor declaration provides no actual implementation, its *constructor_body* consists of a semicolon. For all other constructors, the *constructor_body* consists of either
+
+- a *block*, which specifies the statements to initialize a new instance of the class; or
+- an expression body, which consists of `=>` followed by an *expression* and a semicolon, and denotes a single expression to initialize a new instance of the class.
+
+A *constructor_body* that is a *block* or expression body corresponds exactly to the *block* of an instance method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
 
 Instance constructors are not inherited. Thus, a class has no instance constructors other than those actually declared in the class, with the exception that if a class contains no instance constructor declarations, a default instance constructor is automatically provided ([§14.11.5](classes.md#14115-default-constructors)).
 
@@ -4643,23 +4662,25 @@ A ***static constructor*** is a member that implements the actions required to i
 
 ```ANTLR
 static_constructor_declaration
-  : attributes? static_constructor_modifiers identifier '(' ')' static_constructor_body
-  ;
+    : attributes? static_constructor_modifiers identifier '(' ')'
+        static_constructor_body
+    ;
 
 static_constructor_modifiers
-  : 'static'
-  | 'static' 'extern' unsafe_modifier?
-  | 'static' unsafe_modifier 'extern'?
-  | 'extern' 'static' unsafe_modifier?
-  | 'extern' unsafe_modifier 'static'
-  | unsafe_modifier 'static' 'extern'?
-  | unsafe_modifier 'extern' 'static'
-  ;
+    : 'static'
+    | 'static' 'extern' unsafe_modifier?
+    | 'static' unsafe_modifier 'extern'?
+    | 'extern' 'static' unsafe_modifier?
+    | 'extern' unsafe_modifier 'static'
+    | unsafe_modifier 'static' 'extern'?
+    | unsafe_modifier 'extern' 'static'
+    ;
 
 static_constructor_body
-  : block
-  | ';'
-  ;
+    : block
+    | '=>' expression ';'
+    | ';'
+    ;
 ```
 
 *unsafe_modifier* ([§22.2](unsafe-code.md#222-unsafe-contexts)) is only available in unsafe code ([§22](unsafe-code.md#22-unsafe-code)).
@@ -4668,7 +4689,12 @@ A *static_constructor_declaration* may include a set of *attributes* ([§21](att
 
 The *identifier* of a *static_constructor_declaration* shall name the class in which the static constructor is declared. If any other name is specified, a compile-time error occurs.
 
-When a static constructor declaration includes an `extern` modifier, the static constructor is said to be an ***external static constructor***. Because an external static constructor declaration provides no actual implementation, its *static_constructor_body* consists of a semicolon. For all other static constructor declarations, the *static_constructor_body* consists of a *block*, which specifies the statements to execute in order to initialize the class. This corresponds exactly to the *method_body* of a static method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
+When a static constructor declaration includes an `extern` modifier, the static constructor is said to be an ***external static constructor***. Because an external static constructor declaration provides no actual implementation, its *static_constructor_body* consists of a semicolon.  For all other static constructor declarations, the *static_constructor_body* consists of either
+
+- a *block*, which specifies the statements to execute in order to initialize the class; or
+- an expression body, which consists of `=>` followed by an *expression* and a semicolon, and denotes a single expression to execute in order to initialize the class.
+
+A *static_constructor_body* that is a *block* or expression body corresponds exactly to the *method_body* of a static method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
 
 Static constructors are not inherited, and cannot be called directly.
 
@@ -4802,12 +4828,15 @@ A ***finalizer*** is a member that implements the actions required to finalize a
 ```ANTLR
 finalizer_declaration
     : attributes? '~' identifier '(' ')' finalizer_body
-    | attributes? 'extern' unsafe_modifier? '~' identifier '(' ')' finalizer_body
-    | attributes? unsafe_modifier 'extern'? '~' identifier '(' ')' finalizer_body
+    | attributes? 'extern' unsafe_modifier? '~' identifier '(' ')'
+      finalizer_body
+    | attributes? unsafe_modifier 'extern'? '~' identifier '(' ')'
+      finalizer_body
     ;
 
 finalizer_body
     : block
+    | '=>' expression ';'
     | ';'
     ;
 ```
@@ -4818,7 +4847,12 @@ A *finalizer_declaration* may include a set of *attributes* ([§21](attributes.m
 
 The *identifier* of a *finalizer_declarator* shall name the class in which the finalizer is declared. If any other name is specified, a compile-time error occurs.
 
-When a finalizer declaration includes an `extern` modifier, the finalizer is said to be an ***external finalizer***. Because an external finalizer declaration provides no actual implementation, its *finalizer_body* consists of a semicolon. For all other finalizers, the *finalizer_body* consists of a *block*, which specifies the statements to execute in order to finalize an instance of the class. A *finalizer_body* corresponds exactly to the *method_body* of an instance method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
+When a finalizer declaration includes an `extern` modifier, the finalizer is said to be an ***external finalizer***. Because an external finalizer declaration provides no actual implementation, its *finalizer_body* consists of a semicolon. For all other finalizers, the *finalizer_body* consists of either
+
+- a *block*, which specifies the statements to execute in order to finalize an instance of the class.
+- or an expression body, which consists of `=>` followed by an *expression* and a semicolon, and denotes a single expression to execute in order to finalize an instance of the class.
+
+A *finalizer_body* that is a *block* or expression body corresponds exactly to the *method_body* of an instance method with a `void` return type ([§14.6.11](classes.md#14611-method-body)).
 
 Finalizers are not inherited. Thus, a class has no finalizers other than the one that may be declared in that class.
 

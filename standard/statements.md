@@ -462,7 +462,8 @@ The `if` statement selects a statement for execution based on the value of a Boo
 ```ANTLR
 if_statement
     : 'if' '(' boolean_expression ')' embedded_statement
-    | 'if' '(' boolean_expression ')' embedded_statement 'else' embedded_statement
+    | 'if' '(' boolean_expression ')' embedded_statement
+      'else' embedded_statement
     ;
 ```
 
@@ -782,7 +783,8 @@ The `for` statement evaluates a sequence of initialization expressions and then,
 
 ```ANTLR
 for_statement
-    : 'for' '(' for_initializer? ';' for_condition? ';' for_iterator? ')' embedded_statement
+    : 'for' '(' for_initializer? ';' for_condition? ';' for_iterator? ')'
+      embedded_statement
     ;
 
 for_initializer
@@ -834,7 +836,8 @@ The `foreach` statement enumerates the elements of a collection, executing an em
 
 ```ANTLR
 foreach_statement
-    : 'foreach' '(' local_variable_type identifier 'in' expression ')' embedded_statement
+    : 'foreach' '(' local_variable_type identifier 'in' expression ')'
+      embedded_statement
     ;
 ```
 
@@ -855,7 +858,7 @@ The compile-time processing of a `foreach` statement first determines the ***col
   - Overload resolution is performed on the method group with an empty argument list. If overload resolution results in no applicable methods, results in an ambiguity, or results in a single best method but that method is either static or not public, or its return type is not `bool`, an error is produced and no further steps are taken.
   - The collection type is `X`, the enumerator type is `E`, and the iteration type is the type of the `Current` property.
 - Otherwise, check for an enumerable interface:
-  - If among all the types `Tᵢ` for which there is an implicit conversion from `X` to `IEnumerable<ᵢ>`, there is a unique type `T` such that `T` is not dynamic and for all the other `Tᵢ` there is an implicit conversion from `IEnumerable<T>` to `IEnumerable<Tᵢ>`, then the collection type is the interface `IEnumerable<T>`, the enumerator type is the interface `IEnumerator<T>`, and the iteration type is `T`.
+  - If among all the types `Tᵢ` for which there is an implicit conversion from `X` to `IEnumerable<Tᵢ>`, there is a unique type `T` such that `T` is not `dynamic` and for all the other `Tᵢ` there is an implicit conversion from `IEnumerable<T>` to `IEnumerable<Tᵢ>`, then the collection type is the interface `IEnumerable<T>`, the enumerator type is the interface `IEnumerator<T>`, and the iteration type is `T`.
   - Otherwise, if there is more than one such type `T`, then an error is produced and no further steps are taken.
   - Otherwise, if there is an implicit conversion from `X` to the `System.Collections.IEnumerable` interface, then the collection type is this interface, the enumerator type is the interface `System.Collections.IEnumerator`, and the iteration type is `object`.
   - Otherwise, an error is produced and no further steps are taken.
@@ -1005,6 +1008,7 @@ The order in which `foreach` traverses the elements of an array, is as follows: 
 > ```
 >
 > the type of `n` is inferred to be `int`, the iteration type of `numbers`.
+>  
 > *end example*
 
 ## 12.10 Jump statements
@@ -1249,7 +1253,7 @@ The `try` statement provides a mechanism for catching exceptions that occur duri
 ```ANTLR
 try_statement
     : 'try' block catch_clauses
-    | 'try' block catch_clauses* finally_clause
+    | 'try' block catch_clauses? finally_clause
     ;
 
 catch_clauses

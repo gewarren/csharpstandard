@@ -155,9 +155,7 @@ The lexical processing of a C# compilation unit consists of reducing the file i
 
 When several lexical grammar productions match a sequence of characters in a compilation unit, the lexical processing always forms the longest possible lexical element.
 
-> *Example*: The character sequence `//` is processed as the beginning of a single-line comment because that lexical element is longer than a single `/` token.
->
-> *end example*
+> *Example*: The character sequence `//` is processed as the beginning of a single-line comment because that lexical element is longer than a single `/` token. *end example*
 
 Some tokens are defined by a set of lexical rules; a main rule and one or more sub-rules. The latter are marked in the grammar by `fragment` to indicate the rule defines part of another token. Fragment rules are not considered in the top-to-bottom ordering of lexical rules.
 
@@ -276,9 +274,9 @@ Comments are not processed within character and string literals.
 >
 > is not actually a single-line comment, since `//` has no special meaning within a delimited comment, and so `*/` does have its usual special meaning in that line.
 >
-> Likewise, the delimited comment starting before `D` ends before `E`. The reason is that `"D */ "` is not actually a string literal, since it appears inside a delimited comment.
+> Likewise, the delimited comment starting before `D` ends before `E`. The reason is that `"D */ "` is not actually a string literal, since the initial double quote character appears inside a delimited comment.
 >
-> A useful consequence of `/*` and `*/` having no special meaning within a single-line comment is that a block of source code lines can be commented out by putting `//` at the beginning of each line. In general it does not work to put `/*` before those lines and `*/` after them, as this does not properly encapsulate delimited comments in the block, and in general may completely change the structure of such delimited comments.
+> A useful consequence of `/*` and `*/` having no special meaning within a single-line comment is that a block of source code lines can be commented out by putting `//` at the beginning of each line. In general, it does not work to put `/*` before those lines and `*/` after them, as this does not properly encapsulate delimited comments in the block, and in general may completely change the structure of such delimited comments.
 >
 > Example code:
 >
@@ -335,7 +333,8 @@ A Unicode escape sequence represents a Unicode code point. Unicode escape sequen
 ```ANTLR
 fragment Unicode_Escape_Sequence
     : '\\u' Hex_Digit Hex_Digit Hex_Digit Hex_Digit
-    | '\\U' Hex_Digit Hex_Digit Hex_Digit Hex_Digit Hex_Digit Hex_Digit Hex_Digit Hex_Digit
+    | '\\U' Hex_Digit Hex_Digit Hex_Digit Hex_Digit
+            Hex_Digit Hex_Digit Hex_Digit Hex_Digit
     ;
 ```
 
@@ -397,11 +396,13 @@ Simple_Identifier
     ;
 
 fragment Available_Identifier
-    : Basic_Identifier     // excluding keywords or contextual keywords, see note below
+    // excluding keywords or contextual keywords, see note below
+    : Basic_Identifier
     ;
 
 fragment Escaped_Identifier
-    // Includes keywords and contextual keywords prefixed by '@'. See note below.
+    // Includes keywords and contextual keywords prefixed by '@'.
+    // See note below.
     : '@' Basic_Identifier 
     ;
 
@@ -615,32 +616,54 @@ The type of a *boolean_literal* is `bool`.
 
 #### 6.4.5.3 Integer literals
 
-Integer literals are used to write values of types `int`, `uint`, `long`, and `ulong`. Integer literals have two possible forms: decimal and hexadecimal.
+Integer literals are used to write values of types `int`, `uint`, `long`, and `ulong`. Integer literals have three possible forms: decimal, hexadecimal, and binary.
 
 ```ANTLR
 Integer_Literal
     : Decimal_Integer_Literal
     | Hexadecimal_Integer_Literal
+    | Binary_Integer_Literal
     ;
 
 fragment Decimal_Integer_Literal
-    : Decimal_Digit+ Integer_Type_Suffix?
+    : Decimal_Digit Decorated_Decimal_Digit* Integer_Type_Suffix?
     ;
-    
+
+fragment Decorated_Decimal_Digit
+    : '_'* Decimal_Digit
+    ;
+       
 fragment Decimal_Digit
     : '0'..'9'
     ;
     
 fragment Integer_Type_Suffix
-    : 'U' | 'u' | 'L' | 'l' | 'UL' | 'Ul' | 'uL' | 'ul' | 'LU' | 'Lu' | 'lU' | 'lu'
+    : 'U' | 'u' | 'L' | 'l' |
+      'UL' | 'Ul' | 'uL' | 'ul' | 'LU' | 'Lu' | 'lU' | 'lu'
     ;
     
 fragment Hexadecimal_Integer_Literal
-    : ('0x' | '0X') Hex_Digit+ Integer_Type_Suffix?
+    : ('0x' | '0X') Decorated_Hex_Digit+ Integer_Type_Suffix?
     ;
 
+fragment Decorated_Hex_Digit
+    : '_'* Hex_Digit
+    ;
+       
 fragment Hex_Digit
     : '0'..'9' | 'A'..'F' | 'a'..'f'
+    ;
+   
+fragment Binary_Integer_Literal
+    : ('0b' | '0B') Decorated_Binary_Digit+ Integer_Type_Suffix?
+    ;
+
+fragment Decorated_Binary_Digit
+    : '_'* Binary_Digit
+    ;
+       
+fragment Binary_Digit
+    : '0' | '1'
     ;
 ```
 
@@ -660,20 +683,47 @@ To permit the smallest possible `int` and `long` values to be written as integer
 - When an *Integer_Literal* representing the value `2147483648` (2³¹) and no *Integer_Type_Suffix* appears as the token immediately following a unary minus operator token ([§11.8.3](expressions.md#1183-unary-minus-operator)), the result (of both tokens) is a constant of type int with the value `−2147483648` (−2³¹). In all other situations, such an *Integer_Literal* is of type `uint`.
 - When an *Integer_Literal* representing the value `9223372036854775808` (2⁶³) and no *Integer_Type_Suffix* or the *Integer_Type_Suffix* `L` or `l` appears as the token immediately following a unary minus operator token ([§11.8.3](expressions.md#1183-unary-minus-operator)), the result (of both tokens) is a constant of type `long` with the value `−9223372036854775808` (−2⁶³). In all other situations, such an *Integer_Literal* is of type `ulong`.
 
+> *Example*:
+>
+> ```csharp
+> 123                  // decimal, int
+> 10_543_765Lu         // decimal, ulong
+> 1_2__3___4____5      // decimal, int
+> _123                 // not a numeric literal; identifier due to leading _
+> 123_                 // invalid; no trailing _allowed
+> 
+> 0xFf                 // hex, int
+> 0X1b_a0_44_fEL       // hex, long
+> 0x1ade_3FE1_29AaUL   // hex, ulong
+> 0x_abc               // hex, int
+> _0x123               // not a numeric literal; identifier due to leading _
+> 0xabc_               // invalid; no trailing _ allowed
+> 
+> 0b101                // binary, int
+> 0B1001_1010u         // binary, uint
+> 0b1111_1111_0000UL   // binary, ulong
+> 0B__111              // binary, int
+> __0B111              // not a numeric literal; identifier due to leading _
+> 0B111__              // invalid; no trailing _ allowed
+> ```
+>
+> *end example*
+
 #### 6.4.5.4 Real literals
 
 Real literals are used to write values of types `float`, `double`, and `decimal`.
 
 ```ANTLR
 Real_Literal
-    : Decimal_Digit+ '.' Decimal_Digit+ Exponent_Part? Real_Type_Suffix?
-    | '.' Decimal_Digit+ Exponent_Part? Real_Type_Suffix?
-    | Decimal_Digit+ Exponent_Part Real_Type_Suffix?
-    | Decimal_Digit+ Real_Type_Suffix
+    : Decimal_Digit Decorated_Decimal_Digit* '.'
+      Decimal_Digit Decorated_Decimal_Digit* Exponent_Part? Real_Type_Suffix?
+    | '.' Decimal_Digit Decorated_Decimal_Digit* Exponent_Part? Real_Type_Suffix?
+    | Decimal_Digit Decorated_Decimal_Digit* Exponent_Part Real_Type_Suffix?
+    | Decimal_Digit Decorated_Decimal_Digit* Real_Type_Suffix
     ;
 
 fragment Exponent_Part
-    : ('e' | 'E') Sign? Decimal_Digit+
+    : ('e' | 'E') Sign? Decimal_Digit Decorated_Decimal_Digit*
     ;
 
 fragment Sign
@@ -703,6 +753,24 @@ If the magnitude of the specified literal is too large to be represented in the 
 The value of a real literal of type `float` or `double` is determined by using the IEC 60559 “round to nearest” mode with ties broken to “even” (a value with the least-significant-bit zero), and all digits considered significant.
 
 > *Note*: In a real literal, decimal digits are always required after the decimal point. For example, `1.3F` is a real literal but `1.F` is not. *end note*
+>
+> *Example*:
+>
+> ```csharp
+> 1.234_567      // double
+> .3e5f          // float
+> 2_345E-2_0     // double
+> 15D            // double
+> 19.73M         // decimal
+> 1.F            // parsed as a member access of F due to non-digit after .
+> 1_.2F          // invalid; no trailing _ allowed in integer part
+> 1._234         // parsed as a member access of _234 due to non-digit after .
+> 1.234_         // invalid; no trailing _ allowed in fraction
+> .3e_5F         // invalid; no leading _ allowed in exponent
+> .3e5_F         // invalid; no trailing _ allowed in exponent
+> ```
+>
+> *end example*
 
 #### 6.4.5.5 Character literals
 
@@ -721,11 +789,13 @@ fragment Character
     ;
     
 fragment Single_Character
-    : ~['\\\u000D\u000A\u0085\u2028\u2029]     // anything but ', \, and New_Line_Character
+    // anything but ', \, and New_Line_Character
+    : ~['\\\u000D\u000A\u0085\u2028\u2029]
     ;
     
 fragment Simple_Escape_Sequence
-    : '\\\'' | '\\"' | '\\\\' | '\\0' | '\\a' | '\\b' | '\\f' | '\\n' | '\\r' | '\\t' | '\\v'
+    : '\\\'' | '\\"' | '\\\\' | '\\0' | '\\a' | '\\b' |
+      '\\f' | '\\n' | '\\r' | '\\t' | '\\v'
     ;
     
 fragment Hexadecimal_Escape_Sequence
@@ -800,7 +870,8 @@ fragment Regular_String_Literal_Character
     ;
 
 fragment Single_Regular_String_Literal_Character
-    : ~["\\\u000D\u000A\u0085\u2028\u2029]     // anything but ", \, and New_Line_Character
+    // anything but ", \, and New_Line_Character
+    : ~["\\\u000D\u000A\u0085\u2028\u2029]
     ;
 
 fragment Verbatim_String_Literal
@@ -895,7 +966,7 @@ Punctuators are for grouping and separating.
 ```ANTLR
 operator_or_punctuator
     : '{'  | '}'  | '['  | ']'  | '('   | ')'  | '.'  | ','  | ':'  | ';'
-    | '+'  | '-'  | ASTERISK    | SLASH | '%'  | '&'  | '|'  | '^'  | '!'  | '~'
+    | '+'  | '-'  | ASTERISK    | SLASH | '%'  | '&'  | '|'  | '^'  | '!' | '~'
     | '='  | '<'  | '>'  | '?'  | '??'  | '::' | '++' | '--' | '&&' | '||'
     | '->' | '==' | '!=' | '<=' | '>='  | '+=' | '-=' | '*=' | '/=' | '%='
     | '&=' | '|=' | '^=' | '<<' | '<<=' | '=>'
@@ -914,7 +985,7 @@ right_shift_assignment
 
 *right_shift* is made up of the two tokens `>` and `>`. Similarly, *right_shift_assignment* is made up of the two tokens `>` and `>=`. Unlike other productions in the syntactic grammar, no characters of any kind (not even whitespace) are allowed between the two tokens in each of these productions. These productions are treated specially in order to enable the correct handling of *type_parameter_lists* ([§14.2.3](classes.md#1423-type-parameters)).
 
-> *Note*: Prior to the addition of generics to C#, `>>` and `>>=` were both single tokens. However, the syntax for generics uses the `<` and `>` characters to delimit type parameters and type arguments. It is often desirable to use nested constructed types, such as `List<Dictionary<string, int>>`. Rather than requiring the programmer to separate the `>` and `>` by a space, the definition of the two *operator_or_punctuator*s was changed.
+> *Note*: Prior to the addition of generics to C#, `>>` and `>>=` were both single tokens. However, the syntax for generics uses the `<` and `>` characters to delimit type parameters and type arguments. It is often desirable to use nested constructed types, such as `List<Dictionary<string, int>>`. Rather than requiring the programmer to separate the `>` and `>` by a space, the definition of the two *operator_or_punctuator*s was changed. *end note*
 
 ## 6.5 Pre-processing directives
 
@@ -940,7 +1011,8 @@ fragment PP_Kind
 
 // Only recognised at the beginning of a line
 fragment PP_Start
-    : { getCharPositionInLine() == 0 }? PP_Whitespace? '#' PP_Whitespace? // see note below
+    // See note below.
+    : { getCharPositionInLine() == 0 }? PP_Whitespace? '#' PP_Whitespace?
     ;
 
 fragment PP_Whitespace
@@ -1018,7 +1090,8 @@ The conditional compilation functionality provided by the `#if`, `#elif`, `#else
 
 ```ANTLR
 fragment PP_Conditional_Symbol
-    : Basic_Identifier // must not be equal to tokens TRUE or FALSE, see note below
+    // Must not be equal to tokens TRUE or FALSE. See note below.
+    : Basic_Identifier
     ;
 ```
 
@@ -1049,11 +1122,13 @@ fragment PP_Or_Expression
     ;
     
 fragment PP_And_Expression
-    : PP_Equality_Expression (PP_Whitespace? '&&' PP_Whitespace? PP_Equality_Expression)*
+    : PP_Equality_Expression (PP_Whitespace? '&&' PP_Whitespace?
+      PP_Equality_Expression)*
     ;
 
 fragment PP_Equality_Expression
-    : PP_Unary_Expression (PP_Whitespace? ('==' | '!=') PP_Whitespace? PP_Unary_Expression)*
+    : PP_Unary_Expression (PP_Whitespace? ('==' | '!=') PP_Whitespace?
+      PP_Unary_Expression)*
     ;
     
 fragment PP_Unary_Expression

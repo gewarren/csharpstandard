@@ -8,11 +8,12 @@ Using directives ([§13.5](namespaces.md#135-using-directives)) are provided to 
 
 ## 13.2 Compilation units
 
-A *compilation_unit* consists of zero or more *extern_alias_directive*s followed by zero or more *using_directive*s followed by zero or more *global_attributes* followed by zero or more *namespace_member_declaration*s. The *compilation_unit* defines the overall structure of the input.
+A *compilation_unit* consists of zero or more *extern_alias_directive*s followed by zero or more *using_directive*s followed by zero or one *global_attributes* followed by zero or more *namespace_member_declaration*s. The *compilation_unit* defines the overall structure of the input.
 
 ```ANTLR
 compilation_unit
-    : extern_alias_directive* using_directive* global_attributes? namespace_member_declaration*
+    : extern_alias_directive* using_directive* global_attributes?
+      namespace_member_declaration*
     ;
 ```
 
@@ -53,7 +54,8 @@ qualified_identifier
     ;
 
 namespace_body
-    : '{' extern_alias_directive* using_directive* namespace_member_declaration* '}'
+    : '{' extern_alias_directive* using_directive*
+      namespace_member_declaration* '}'
     ;
 ```
 

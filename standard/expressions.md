@@ -319,13 +319,15 @@ In both of the above cases, a cast expression can be used to explicitly convert 
 > *Example*: In the following code
 >
 > ```csharp
-> decimal AddPercent(decimal x, double percent) => x * (1.0 + percent / 100.0);
+> decimal AddPercent(decimal x, double percent) =>
+>     x * (1.0 + percent / 100.0);
 > ```
 >
 > a binding-time error occurs because a `decimal` cannot be multiplied by a `double`. The error is resolved by explicitly converting the second operand to `decimal`, as follows:
 >
 > ```csharp
-> decimal AddPercent(decimal x, double percent) => x * (decimal)(1.0 + percent / 100.0);
+> decimal AddPercent(decimal x, double percent) =>
+>     x * (decimal)(1.0 + percent / 100.0);
 > ```
 >
 > *end example*
@@ -684,7 +686,8 @@ When a generic method is called without specifying type arguments, a ***type inf
 > {
 >     static Random rand = new Random();
 >
->     public static T Choose<T>(T first, T second) => rand.Next(2) == 0 ? first : second;
+>     public static T Choose<T>(T first, T second) =>
+>         rand.Next(2) == 0 ? first : second;
 > }
 > ```
 >
@@ -838,7 +841,7 @@ The ***inferred effective return type*** is determined as follows:
 
 The ***inferred return type*** is determined as follows:
 
-- If `F` is async and the body of `F` is either an expression classified as nothing ([§11.2](expressions.md#112-expression-classifications)), or a statement block where no `return` statements have expressions, the inferred return type is `System.Threading.Tasks.Task`.
+- If `F` is async and the body of `F` is either an expression classified as nothing ([§11.2](expressions.md#112-expression-classifications)), or a block where no `return` statements have expressions, the inferred return type is `System.Threading.Tasks.Task`.
 - If `F` is async and has an inferred effective return type `T`, the inferred return type is `System.Threading.Tasks.Task<T>`.
 - If `F` is non-async and has an inferred effective return type `T`, the inferred return type is `T`.
 - Otherwise, a return type cannot be inferred for `F`.
@@ -997,10 +1000,11 @@ In case the parameter type sequences `{P₁, P₂, ..., Pᵥ}` and `{Q₁, Q₂
 
 #### 11.6.4.4 Better conversion from expression
 
-Given an implicit conversion `C₁` that converts from an expression `E` to a type `T₁`, and an implicit conversion `C₂` that converts from an expression `E` to a type `T₂`, `C₁` is a better conversion than `C₂` if one of the following holds:
+Given an implicit conversion `C₁` that converts from an expression `E` to a type `T₁`, and an implicit conversion `C₂` that converts from an expression `E` to a type `T₂`, `C₁` is a ***better conversion*** than `C₂` if one of the following holds:
 
 - `E` exactly matches `T₁` and `E` does not exactly match `T₂` ([§11.6.4.5](expressions.md#11645-exactly-matching-expression))
 - `E` exactly matches both or neither of `T₁` and `T₂`, and `T₁` is a better conversion target than `T₂` ([§11.6.4.6](expressions.md#11646-better-conversion-target))
+- `E` is a method group ([§11.2](expressions.md#112-expression-classifications)), `T₁` is compatible ([§19.4](delegates.md#194-delegate-compatibility)) with the single best method from the method group for conversion `C₁`, and `T₂` is not compatible with the single best method from the method group for conversion `C₂`
 
 #### 11.6.4.5 Exactly matching expression
 
@@ -1011,20 +1015,19 @@ Given an expression `E` and a type `T`, `E` ***exactly matches*** `T` if one of 
   - An inferred return type `X` exists for `E` in the context of the parameter list of `D` ([§11.6.3.12](expressions.md#116312-fixing)), and an identity conversion exists from `X` to the return type of `D`
   - Either `E` is non-async and `D` has a return type `Y` or `E` is async and  `D` has a return type `Task<Y>`, and one of the following holds:
     - The body of `E` is an expression that exactly matches `Y`
-    - The body of `E` is a statement block where every return statement returns an expression that exactly matches `Y`
+    - The body of `E` is a block where every return statement returns an expression that exactly matches `Y`
 
 #### 11.6.4.6 Better conversion target
 
-Given an expression `E` and two types `T₁` and `T₂`, `T₁` is a ***better conversion target*** than `T₂` for `E` if one of the following holds:
+Given two types `T₁` and `T₂`, `T₁` is a ***better conversion target*** than `T₂` if one of the following holds:
 
-- An implicit conversion from `T₁` to `T₂` exists
+- An implicit conversion from `T₁` to `T₂` exists and no implicit conversion from `T₂` to `T₁` exists
 - `T₁` is `Task<S₁>`, `T₂` is `Task<S₂>`, and `S₁` is a better conversion target than `S₂`
 - `T₁` is `S₁` or `S₁?` where `S₁` is a signed integral type, and `T₂` is `S₂` or `S₂?` where `S₂` is an unsigned integral type. Specifically:
   - `S₁` is `sbyte` and `S₂` is `byte`, `ushort`, `uint`, or `ulong`
   - `S₁` is `short` and `S₂` is `ushort`, `uint`, or `ulong`
   - `S₁` is `int` and `S₂` is `uint`, or `ulong`
   - `S₁` is `long` and `S₂` is `ulong`
-- `E` is a method group conversion ([§10.8](conversions.md#108-method-group-conversions)) and `T₁` is compatible ([§19.4](delegates.md#194-delegate-compatibility)) with the single best method from the method group
 
 #### 11.6.4.7 Overloading in generic classes
 
@@ -1216,7 +1219,8 @@ interpolated_regular_string_expression
     ;
 
 regular_interpolation
-    : expression (',' interpolation_minimum_width)? Regular_Interpolation_Format?
+    : expression (',' interpolation_minimum_width)?
+      Regular_Interpolation_Format?
     ;
 
 interpolation_minimum_width
@@ -1265,7 +1269,8 @@ interpolated_verbatim_string_expression
     ;
 
 verbatim_interpolation
-    : expression (',' interpolation_minimum_width)? Verbatim_Interpolation_Format?
+    : expression (',' interpolation_minimum_width)?
+      Verbatim_Interpolation_Format?
     ;
 
 Interpolated_Verbatim_String_Start
@@ -1457,8 +1462,9 @@ member_access
     ;
 
 predefined_type
-    : 'bool'   | 'byte'  | 'char'  | 'decimal' | 'double' | 'float' | 'int' | 'long'
-    | 'object' | 'sbyte' | 'short' | 'string'  | 'uint'   | 'ulong' | 'ushort'
+    : 'bool' | 'byte' | 'char' | 'decimal' | 'double' | 'float' | 'int'
+    | 'long' | 'object' | 'sbyte' | 'short' | 'string' | 'uint' | 'ulong'
+    | 'ushort'
     ;
 ```
 
@@ -1518,22 +1524,22 @@ In a member access of the form `E.I`, if `E` is a single identifier, and if the 
 >
 > class A
 > {
->     public Color Color;              // Field Color of type Color
+>     public «Color» Color;              // Field Color of type Color
 >
 >     void F()
 >     {
->         Color = Color.Black;         // Refers to Color.Black static member
->         Color = Color.Complement();  // Invokes Complement() on Color fld
+>         Color = «Color».Black;         // Refers to Color.Black static member
+>         Color = Color.Complement();  // Invokes Complement() on Color field
 >     }
 >
 >     static void G()
 >     {
->         Color c = Color.White;       // Refers to Color.White static member
+>         «Color» c = «Color».White;       // Refers to Color.White static member
 >     }
 > }
 > ```
 >
-> Within the `A` class, those occurrences of the Color identifier that reference the Color type are delimited by `**`, and those that reference the Color field are not.
+> For expository purposes only, within the `A` class, those occurrences of the `Color` identifier that reference the `Color` type are delimited by `«...»`, and those that reference the `Color` field are not.
 >
 > *end example*
 
@@ -1545,7 +1551,8 @@ A *null_conditional_member_access* consists of a *primary_expression* followed b
 
 ```ANTLR
 null_conditional_member_access
-    : primary_expression '?' '.' identifier type_argument_list? dependent_access*
+    : primary_expression '?' '.' identifier type_argument_list?
+      dependent_access*
     ;
     
 dependent_access
@@ -1891,7 +1898,8 @@ A *null_conditional_element_access* consists of a *primary_no_array_creation_exp
 
 ```ANTLR
 null_conditional_element_access
-    : primary_no_array_creation_expression '?' '[' argument_list ']' dependent_access*
+    : primary_no_array_creation_expression '?' '[' argument_list ']'
+      dependent_access*
     ;
 ```
 
@@ -2305,7 +2313,8 @@ An *array_creation_expression* is used to create a new instance of an *array_typ
 
 ```ANTLR
 array_creation_expression
-    : 'new' non_array_type '[' expression_list ']' rank_specifier* array_initializer?
+    : 'new' non_array_type '[' expression_list ']' rank_specifier*
+      array_initializer?
     | 'new' array_type array_initializer
     | 'new' rank_specifier array_initializer
     ;
@@ -2313,9 +2322,7 @@ array_creation_expression
 
 An array creation expression of the first form allocates an array instance of the type that results from deleting each of the individual expressions from the expression list.
 
-> *Example*: The array creation expression `new int[10,20]` produces an array instance of type `int[,]`, and the array creation expression new `int[10][,]` produces an array instance of type `int[][,]`.
->
-> *end example*
+> *Example*: The array creation expression `new int[10,20]` produces an array instance of type `int[,]`, and the array creation expression new `int[10][,]` produces an array instance of type `int[][,]`. *end example*
 
 Each expression in the expression list shall be of type `int`, `uint`, `long`, or `ulong`, or implicitly convertible to one or more of these types. The value of each expression determines the length of the corresponding dimension in the newly allocated array instance. Since the length of an array dimension shall be nonnegative, it is a compile-time error to have a constant expression with a negative value, in the expression list.
 
@@ -2673,8 +2680,8 @@ The `sizeof` operator returns the number of 8-bit bytes occupied by a variable o
 
 ```ANTLR
 sizeof_expression
-   : 'sizeof' '(' unmanaged_type ')'
-   ;
+    : 'sizeof' '(' unmanaged_type ')'
+    ;
 ```
 
 For certain predefined types the `sizeof` operator yields a constant `int` value as shown in the table below:
@@ -2884,13 +2891,13 @@ These are the same transformations applied in [§6.4.3](lexical-structure.md#643
 >         string n11 = nameof(Program.NestedClass);        // "NestedClass"
 > 
 >         // Invalid
->         // string x1 = nameof(List<>);                   // Empty type argument list
->         // string x2 = nameof(List<T>);                  // T is not in scope
->         // string x3 = nameof(GenericMethod<>);          // Empty type argument list
->         // string x4 = nameof(GenericMethod<T>);         // T is not in scope
->         // string x5 = nameof(int);                      // Keywords not permitted
->         // string x6 = nameof(GenericMethod<Program>);   // Type arguments not permitted
->                                                          // for method group
+>         // string x1 = nameof(List<>);            // Empty type argument list
+>         // string x2 = nameof(List<T>);           // T is not in scope
+>         // string x3 = nameof(GenericMethod<>);   // Empty type argument list
+>         // string x4 = nameof(GenericMethod<T>);  // T is not in scope
+>         // string x5 = nameof(int);               // Keywords not permitted
+>         // Type arguments not permitted for method group
+>         // string x6 = nameof(GenericMethod<Program>);
 >     }
 > 
 >     void InstanceMethod() { }
@@ -3097,9 +3104,7 @@ A *cast_expression* of the form `(T)E`, where `T` is a type and `E` is a *unary_
 
 The grammar for a *cast_expression* leads to certain syntactic ambiguities.
 
-> *Example*: The expression `(x)–y` could either be interpreted as a *cast_expression* (a cast of `–y` to type `x`) or as an *additive_expression* combined with a *parenthesized_expression* (which computes the value `x – y`).
->
-> *end example*
+> *Example*: The expression `(x)–y` could either be interpreted as a *cast_expression* (a cast of `–y` to type `x`) or as an *additive_expression* combined with a *parenthesized_expression* (which computes the value `x – y`). *end example*
 
 To resolve *cast_expression* ambiguities, the following rule exists: A sequence of one or more tokens ([§6.4](lexical-structure.md#64-tokens)) enclosed in parentheses is considered the start of a *cast_expression* only if at least one of the following are true:
 
@@ -3108,9 +3113,7 @@ To resolve *cast_expression* ambiguities, the following rule exists: A sequence 
 
 The term “correct grammar” above means only that the sequence of tokens shall conform to the particular grammatical production. It specifically does not consider the actual meaning of any constituent identifiers.
 
-> *Example*: If `x` and `y` are identifiers, then `x.y` is correct grammar for a type, even if `x.y` doesn’t actually denote a type.
->
-> *end example*
+> *Example*: If `x` and `y` are identifiers, then `x.y` is correct grammar for a type, even if `x.y` doesn’t actually denote a type. *end example*
 <!-- markdownlint-disable MD028 -->
 
 <!-- markdownlint-enable MD028 -->
@@ -3227,97 +3230,15 @@ The predefined multiplication operators are listed below. The operators all comp
 
   The product is computed according to the rules of IEC 60559 arithmetic. The following table lists the results of all possible combinations of nonzero finite values, zeros, infinities, and NaNs. In the table, `x` and `y` are positive finite values. `z` is the result of `x * y`, rounded to the nearest representable value. If the magnitude of the result is too large for the destination type, `z` is infinity. Because of rounding, `z` may be zero even though neither `x` nor `y` is zero.
   
-  <!-- Custom Word conversion: multiplication -->
-  <table>
-  <!-- md equivalent:   ` `   | **`+y`**  | **`-y`**  | **`+0`**  | **`-0`**  | **`+∞`**  | **`-∞`**  | **`NaN`** -->
-    <tr>
-      <td></td>
-     <td><b><code>+y</code></b></td>
-      <td><b><code>-y</code></b></td>
-      <td><b><code>+0</code></b></td>
-      <td><b><code>-0</code></b></td>
-      <td><b><code>+∞</code></b></td>
-      <td><b><code>-∞</code></b></td>
-      <td><b><code>NaN</code></b></td>
-    </tr>
-  <!-- md equivalent: `+x`  | `+z`  | `-z`  | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` -->
-    <tr>
-      <td><code>+x</code></td>
-      <td><code>+z</code></td>
-      <td><code>-z</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-x`  | `-z`  | `+z`  | `-0`  | `+0`  | `-∞`  | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>-x</code></td>
-      <td><code>-z</code></td>
-      <td><code>+z</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:   `+0`  | `+0`  | `-0`  | `+0`  | `-0`  | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-0`  | `-0`  | `+0`  | `-0`  | `+0`  | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>-0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+∞`  | `+∞`  | `-∞`  | `NaN` | `NaN` | `+∞`  | `-∞`  | `NaN` -->
-    <tr>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-∞`  | `-∞`  | `+∞`  | `NaN` | `NaN` | `-∞`  | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  </table>
+  |           | `+y`  | `-y`  | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | :-------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+  | **`+x`**  | `+z`  | `-z`  | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | **`-x`**  | `-z`  | `+z`  | `-0`  | `+0`  | `-∞`  | `+∞`  | `NaN` |
+  | **`+0`**  | `+0`  | `-0`  | `+0`  | `-0`  | `NaN` | `NaN` | `NaN` |
+  | **`-0`**  | `-0`  | `+0`  | `-0`  | `+0`  | `NaN` | `NaN` | `NaN` |
+  | **`+∞`**  | `+∞`  | `-∞`  | `NaN` | `NaN` | `+∞`  | `-∞`  | `NaN` |
+  | **`-∞`**  | `-∞`  | `+∞`  | `NaN` | `NaN` | `-∞`  | `+∞`  | `NaN` |
+  | **`NaN`** | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
 
   (Except were otherwise noted, in the floating-point tables in [§11.9.2](expressions.md#1192-multiplication-operator)–[§11.9.6](expressions.md#1196-subtraction-operator) the use of “`+`” means the value is positive; the use of “`-`” means the value is negative; and the lack of a sign means the value may be positive or negative or has no sign (NaN).)
 - Decimal multiplication:
@@ -3360,97 +3281,15 @@ The predefined division operators are listed below. The operators all compute th
 
   The quotient is computed according to the rules of IEC 60559 arithmetic. The following table lists the results of all possible combinations of nonzero finite values, zeros, infinities, and NaNs. In the table, `x` and `y` are positive finite values. `z` is the result of `x / y`, rounded to the nearest representable value.
 
-  <!-- Custom Word conversion: division -->
-  <table>
-  <!-- md equivalent:   ` `   | **`+y`**  | **`-y`**  | **`+0`**  | **`-0`**  | **`+∞`**  | **`-∞`**  | **`NaN`** -->
-    <tr>
-      <td></td>
-      <td><b><code>+y</code></b></td>
-      <td><b><code>-y</code></b></td>
-      <td><b><code>+0</code></b></td>
-      <td><b><code>-0</code></b></td>
-      <td><b><code>+∞</code></b></td>
-      <td><b><code>-∞</code></b></td>
-      <td><b><code>NaN</code></b></td>
-    </tr>
-  <!-- md equivalent:   `+x`  | `+z`  | `-z`  | `+∞`  | `-∞`  | `+0`  | `-0`  | `NaN` -->
-    <tr>
-      <td><code>+x</code></td>
-      <td><code>+z</code></td>
-      <td><code>-z</code></td>
-      <td><code>+∞</code></td>
-      <td><code>–∞</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-x`  | `-z`  | `+z`  | `-∞`  | `+∞`  | `-0`  | `+0`  | `NaN` -->
-    <tr>
-      <td><code>-x</code></td>
-      <td><code>-z</code></td>
-      <td><code>+z</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:  `+0`  | `+0`  | `-0`  | `NaN` | `NaN` | `+0`  | `-0`  | `NaN` -->
-    <tr>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-0`  | `-0`  | `+0`  | `NaN` | `NaN` | `-0`  | `+0`  | `NaN` -->
-    <tr>
-      <td><code>-0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+∞`  | `+∞`  | `-∞`  | `+∞`  | `-∞`  | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:  `-∞`  | `-∞`  | `+∞`  | `-∞`  | `+∞`  | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:   `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  </table>
+  |           | `+y`  | `-y`  | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | :-------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+  | **`+x`**  | `+z`  | `-z`  | `+∞`  | `-∞`  | `+0`  | `-0`  | `NaN` |
+  | **`-x`**  | `-z`  | `+z`  | `-∞`  | `+∞`  | `-0`  | `+0`  | `NaN` |
+  | **`+0`**  | `+0`  | `-0`  | `NaN` | `NaN` | `+0`  | `-0`  | `NaN` |
+  | **`-0`**  | `-0`  | `+0`  | `NaN` | `NaN` | `-0`  | `+0`  | `NaN` |
+  | **`+∞`**  | `+∞`  | `-∞`  | `+∞`  | `-∞`  | `NaN` | `NaN` | `NaN` |
+  | **`-∞`**  | `-∞`  | `+∞`  | `-∞`  | `+∞`  | `NaN` | `NaN` | `NaN` |
+  | **`NaN`** | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
 
 - Decimal division:
 
@@ -3491,97 +3330,16 @@ The predefined remainder operators are listed below. The operators all compute t
   
   The following table lists the results of all possible combinations of nonzero finite values, zeros, infinities, and NaNs. In the table, `x` and `y` are positive finite values. `z` is the result of `x % y` and is computed as `x – n * y`, where n is the largest possible integer that is less than or equal to `x / y`. This method of computing the remainder is analogous to that used for integer operands, but differs from the IEC 60559 definition (in which `n` is the integer closest to `x / y`).
 
-  <!-- Custom Word conversion: remainder -->
-  <table>
-  <!-- md equivalent: ` `   | **`+y`**  | **`-y`**  | **`+0`**  | **`-0`**  | **`+∞`**  | **`-∞`**  | **`NaN`** -->
-    <tr>
-      <td></td>
-      <td><b><code>+y</code></b></td>
-      <td><b><code>-y</code></b></td>
-      <td><b><code>+0</code></b></td>
-      <td><b><code>-0</code></b></td>
-      <td><b><code>+∞</code></b></td>
-      <td><b><code>–∞</code></b></td>
-      <td><b><code>NaN</code></b></td>
-    </tr>
-  <!-- md equivalent: `+x`  | `+z`  | `+z`  | `NaN` | `NaN` | `+x`  | `+x`  | `NaN` -->
-    <tr>
-      <td><code>+x</code></td>
-      <td><code>+z</code></td>
-      <td><code>+z</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>+x</code></td>
-      <td><code>+x</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-x`  | `-z`  | `-z`  | `NaN` | `NaN` | `-x`  | `-x`  | `NaN` -->
-    <tr>
-      <td><code>-x</code></td>
-      <td><code>-z</code></td>
-      <td><code>-z</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>-x</code></td>
-      <td><code>-x</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+0`  | `+0`  | `+0`  | `NaN` | `NaN` | `+0`  | `+0`  | `NaN` -->
-    <tr>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-0`  | `-0`  | `-0`  | `NaN` | `NaN` | `-0`  | `-0`  | `NaN` -->
-    <tr>
-      <td><code>-0</code></td>
-      <td><code>-0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>-0</code></td>
-      <td><code>-0</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+∞`  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-∞`  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  </table>
+  |           | `+y`  | `-y`  | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | :-------- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+  | **`+x`**  | `+z`  | `+z`  | `NaN` | `NaN` | `+x`  | `+x`  | `NaN` |
+  | **`-x`**  | `-z`  | `-z`  | `NaN` | `NaN` | `-x`  | `-x`  | `NaN` |
+  | **`+0`**  | `+0`  | `+0`  | `NaN` | `NaN` | `+0`  | `+0`  | `NaN` |
+  | **`-0`**  | `-0`  | `-0`  | `NaN` | `NaN` | `-0`  | `-0`  | `NaN` |
+  | **`+∞`**  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
+  | **`-∞`**  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
+  | **`NaN`** | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
+
 - Decimal remainder:
 
   ```csharp
@@ -3621,79 +3379,14 @@ The predefined addition operators are listed below. For numeric and enumeration 
 
   The sum is computed according to the rules of IEC 60559 arithmetic. The following table lists the results of all possible combinations of nonzero finite values, zeros, infinities, and NaNs. In the table, `x` and `y` are nonzero finite values, and `z` is the result of `x + y`,. If `x` and `y` have the same magnitude but opposite signs, `z` is positive zero. If `x + y` is too large to represent in the destination type, `z` is an infinity with the same sign as `x + y`.
 
-  <!-- Custom Word conversion: addition -->
-  <table>
-  <!-- md equivalent: ` `   | **`y`**   | **`+0`**  | **`-0`**  | **`+∞`**  | **`-∞`**  | **`NaN`* -->
-    <tr>
-      <td></td>
-      <td><b><code>y</code></b></td>
-      <td><b><code>+0</code></b></td>
-      <td><b><code>-0</code></b></td>
-      <td><b><code>+∞</code></b></td>
-      <td><b><code>–∞</code></b></td>
-      <td><b><code>NaN</code></b></td>
-    </tr>
-  <!-- md equivalent: `x`   | `z`   | `x`   | `x`   | `+∞`  | `-∞`  | `NaN` -->
-    <tr>
-      <td><code>x</code></td>
-      <td><code>z</code></td>
-      <td><code>x</code></td>
-      <td><code>x</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+0`  | `y`   | `+0`  | `+0`  | `+∞`  | `–∞`  | `NaN` -->
-    <tr>
-      <td><code>+0</code></td>
-      <td><code>y</code></td>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>+∞</code></td>
-      <td><code>–∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-0`  | `y`   | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` -->
-    <tr>
-      <td><code>-0</code></td>
-      <td><code>y</code></td>
-      <td><code>+0</code></td>
-      <td><code>-0</code></td>
-      <td><code>+∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+∞`  | `+∞`  | `+∞`  | `+∞`  | `+∞`  | `NaN` | `NaN` -->
-    <tr>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:   `-∞`  | `-∞`  | `-∞`  | `-∞`  | `NaN` | `-∞`  | `NaN` -->
-    <tr>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>-∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:  `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  </table>
+  |       | `y`   | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | :---- | :---: | :---: | :---: | :---: | :---: | :---: |
+  | `x`   | `z`   | `x`   | `x`   | `+∞`  | `-∞`  | `NaN` |
+  | `+0`  | `y`   | `+0`  | `+0`  | `+∞`  | `–∞`  | `NaN` |
+  | `-0`  | `y`   | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | `+∞`  | `+∞`  | `+∞`  | `+∞`  | `+∞`  | `NaN` | `NaN` |
+  | `-∞`  | `-∞`  | `-∞`  | `-∞`  | `NaN` | `-∞`  | `NaN` |
+  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
   
 - Decimal addition:
 
@@ -3787,79 +3480,14 @@ The predefined subtraction operators are listed below. The operators all subtrac
 
   The difference is computed according to the rules of IEC 60559 arithmetic. The following table lists the results of all possible combinations of nonzero finite values, zeros, infinities, and NaNs. In the table, `x` and `y` are nonzero finite values, and `z` is the result of `x – y`. If `x` and `y` are equal, `z` is positive zero. If `x – y` is too large to represent in the destination type, `z` is an infinity with the same sign as `x – y`.
 
-  <!-- Custom Word conversion: subtraction -->
-  <table>
-  <!-- md equivalent: ` `   | **`y`**   | **`+0`**  | **`-0`**  | **`+∞`**  | **`-∞`**  | **`NaN`** -->
-    <tr>
-      <td></td>
-      <td><b><code>y</code></b></td>
-      <td><b><code>+0</code></b></td>
-      <td><b><code>-0</code></b></td>
-      <td><b><code>+∞</code></b></td>
-      <td><b><code>–∞</code></b></td>
-      <td><b><code>NaN</code></b></td>
-    </tr>
-  <!-- md equivalent: `x`   | `z`   | `x`   | `x`   | `-∞`  | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>x</code></td>
-      <td><code>z</code></td>
-      <td><code>x</code></td>
-      <td><code>x</code></td>
-      <td><code>–∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+0`  | `-y`  | `+0`  | `+0`  | `-∞`  | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>+0</code></td>
-      <td><code>-y</code></td>
-      <td><code>+0</code></td>
-      <td><code>+0</code></td>
-      <td><code>–∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `-0`  | `-y`  | `-0`  | `+0`  | `-∞`  | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>-0</code></td>
-      <td><code>-y</code></td>
-      <td><code>-0</code></td>
-      <td><code>+0</code></td>
-      <td><code>–∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `+∞`  | `+∞`  | `+∞`  | `+∞`  | `NaN` | `+∞`  | `NaN` -->
-    <tr>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>+∞</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent:  `-∞`  | `-∞`  | `-∞`  | `-∞`  | `-∞`  | `NaN` | `NaN` -->
-    <tr>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>-∞</code></td>
-      <td><code>–∞</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  <!-- md equivalent: `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` -->
-    <tr>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-      <td><code>NaN</code></td>
-    </tr>
-  </table>
+  |       | `y`   | `+0`  | `-0`  | `+∞`  | `-∞`  | `NaN` |
+  | :---- | :---: | :---: | :---: | :---: | :---: | :---: |
+  | `x`   | `z`   | `x`   | `x`   | `-∞`  | `+∞`  | `NaN` |
+  | `+0`  | `-y`  | `+0`  | `+0`  | `-∞`  | `+∞`  | `NaN` |
+  | `-0`  | `-y`  | `-0`  | `+0`  | `-∞`  | `+∞`  | `NaN` |
+  | `+∞`  | `+∞`  | `+∞`  | `+∞`  | `NaN` | `+∞`  | `NaN` |
+  | `-∞`  | `-∞`  | `-∞`  | `-∞`  | `-∞`  | `NaN` | `NaN` |
+  | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` | `NaN` |
   
   (In the above table the `-y` entries denote the *negation* of `y`, not that the value is negative.)
 - Decimal subtraction:
@@ -3920,16 +3548,16 @@ The predefined subtraction operators are listed below. The operators all subtrac
   >     {
   >         D cd1 = new D(C.M1);
   >         D cd2 = new D(C.M2);
-  >         D delList = null;
+  >         D list = null;
   > 
-  >         delList = null - cd1;                                // null
-  >         delList = (cd1 + cd2 + cd2 + cd1) - null;            // M1 + M2 + M2 + M1
-  >         delList = (cd1 + cd2 + cd2 + cd1) - cd1;             // M1 + M2 + M2
-  >         delList = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd2);     // M2 + M1
-  >         delList = (cd1 + cd2 + cd2 + cd1) - (cd2 + cd2);     // M1 + M1
-  >         delList = (cd1 + cd2 + cd2 + cd1) - (cd2 + cd1);     // M1 + M2
-  >         delList = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd1);     // M1 + M2 + M2 + M1
-  >         delList = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd2 + cd2 + cd1);  // null
+  >         list = null - cd1;                             // null
+  >         list = (cd1 + cd2 + cd2 + cd1) - null;         // M1 + M2 + M2 + M1
+  >         list = (cd1 + cd2 + cd2 + cd1) - cd1;          // M1 + M2 + M2
+  >         list = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd2);  // M2 + M1
+  >         list = (cd1 + cd2 + cd2 + cd1) - (cd2 + cd2);  // M1 + M1
+  >         list = (cd1 + cd2 + cd2 + cd1) - (cd2 + cd1);  // M1 + M2
+  >         list = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd1);  // M1 + M2 + M2 + M1
+  >         list = (cd1 + cd2 + cd2 + cd1) - (cd1 + cd2 + cd2 + cd1);  // null
   >     }
   > }
   > ```
@@ -3996,9 +3624,7 @@ Shift operations never cause overflows and produce the same results in checked a
 
 When the left operand of the `>>` operator is of a signed integral type, the operator performs an *arithmetic* shift right wherein the value of the most significant bit (the sign bit) of the operand is propagated to the high-order empty bit positions. When the left operand of the `>>` operator is of an unsigned integral type, the operator performs a *logical* shift right wherein high-order empty bit positions are always set to zero. To perform the opposite operation of that inferred from the operand type, explicit casts can be used.
 
-> *Example*: If `x` is a variable of type `int`, the operation `unchecked ((int)((uint)x >> y))` performs a logical shift right of `x`.
->
-> *end example*
+> *Example*: If `x` is a variable of type `int`, the operation `unchecked ((int)((uint)x >> y))` performs a logical shift right of `x`. *end example*
 
 Lifted ([§11.4.8](expressions.md#1148-lifted-operators)) forms of the unlifted predefined shift operators defined above are also predefined.
 
@@ -4113,9 +3739,7 @@ The operators compare the operands according to the rules of the IEC 60559 stand
 
 If either operand is NaN, the result is `false` for all operators except `!=`, for which the result is `true`. For any two operands, `x != y` always produces the same result as `!(x == y)`. However, when one or both operands are NaN, the `<`, `>`, `<=`, and `>=` operators do *not* produce the same results as the logical negation of the opposite operator.
 
-> *Example*: If either of `x` and `y` is NaN, then `x` < `y` is `false`, but `!(x >= y)` is `true`.
->
-> *end example*
+> *Example*: If either of `x` and `y` is NaN, then `x < y` is `false`, but `!(x >= y)` is `true`. *end example*
 
 When neither operand is NaN, the operators compare the values of the two floating-point operands with respect to the ordering
 
@@ -4620,9 +4244,7 @@ In a null coalescing expression of the form `a ?? b`, if `a` is non-`null`, th
 
 The null coalescing operator is right-associative, meaning that operations are grouped from right to left.
 
-> *Example*: An expression of the form `a ?? b ?? c` is evaluated as a `?? (b ?? c)`. In general terms, an expression of the form `E1 ?? E2 ?? ... ?? EN` returns the first of the operands that is non-`null`, or `null` if all operands are `null`.
->
-> *end example*
+> *Example*: An expression of the form `a ?? b ?? c` is evaluated as a `?? (b ?? c)`. In general terms, an expression of the form `E1 ?? E2 ?? ... ?? EN` returns the first of the operands that is non-`null`, or `null` if all operands are `null`. *end example*
 
 The type of the expression `a ?? b` depends on which implicit conversions are available on the operands. In order of preference, the type of `a ?? b` is `A₀`, `A`, or `B`, where `A` is the type of `a` (provided that `a` has a type), `B` is the type of `b`(provided that `b` has a type), and `A₀` is the underlying type of `A` if `A` is a nullable value type, or `A` otherwise. Specifically, `a ?? b` is processed as follows:
 
@@ -4650,9 +4272,7 @@ A conditional expression of the form `b ? x : y` first evaluates the conditi
 
 The conditional operator is right-associative, meaning that operations are grouped from right to left.
 
-> *Example*: An expression of the form `a ? b : c ? d : e` is evaluated as `a ? b : (c ? d : e)`.
->
-> *end example*
+> *Example*: An expression of the form `a ? b : c ? d : e` is evaluated as `a ? b : (c ? d : e)`. *end example*
 
 The first operand of the `?:` operator shall be an expression that can be implicitly converted to `bool`, or an expression of a type that implements `operator true`. If neither of these requirements is satisfied, a compile-time error occurs.
 
@@ -4703,7 +4323,8 @@ explicit_anonymous_function_signature
     ;
 
 explicit_anonymous_function_parameter_list
-    : explicit_anonymous_function_parameter (',' explicit_anonymous_function_parameter)*
+    : explicit_anonymous_function_parameter
+      (',' explicit_anonymous_function_parameter)*
     ;
 
 explicit_anonymous_function_parameter
@@ -4721,7 +4342,8 @@ implicit_anonymous_function_signature
     ;
 
 implicit_anonymous_function_parameter_list
-    : implicit_anonymous_function_parameter (',' implicit_anonymous_function_parameter)*
+    : implicit_anonymous_function_parameter
+      (',' implicit_anonymous_function_parameter)*
     ;
 
 implicit_anonymous_function_parameter
@@ -4781,7 +4403,7 @@ The behavior of *lambda_expression*s and *anonymous_method_expression*s is the s
 
 - *anonymous_method_expression*s permit the parameter list to be omitted entirely, yielding convertibility to delegate types of any list of value parameters.
 - *lambda_expression*s permit parameter types to be omitted and inferred whereas *anonymous_method_expression*s require parameter types to be explicitly stated.
-- The body of a *lambda_expression* can be an expression or a statement block whereas the body of an *anonymous_method_expression* shall be a statement block.
+- The body of a *lambda_expression* can be an expression or a block whereas the body of an *anonymous_method_expression* shall be a block.
 - Only *lambda_expression*s have conversions to compatible expression tree types ([§8.6](types.md#86-expression-tree-types)).
 
 ### 11.16.2 Anonymous function signatures
@@ -5240,7 +4862,7 @@ class Test
 }
 ```
 
-Here, a compiler-generated class is created for each statement block in which locals are captured such that the locals in the different blocks can have independent lifetimes. An instance of `__Locals2`, the compiler generated class for the inner statement block, contains the local variable `z` and a field that references an instance of `__Locals1`. An instance of `__Locals1`, the compiler generated class for the outer statement block, contains the local variable `y` and a field that references `this` of the enclosing function member. With these data structures, it is possible to reach all captured outer variables through an instance of `__Local2`, and the code of the anonymous function can thus be implemented as an instance method of that class.
+Here, a compiler-generated class is created for each block in which locals are captured such that the locals in the different blocks can have independent lifetimes. An instance of `__Locals2`, the compiler generated class for the inner block, contains the local variable `z` and a field that references an instance of `__Locals1`. An instance of `__Locals1`, the compiler generated class for the outer block, contains the local variable `y` and a field that references `this` of the enclosing function member. With these data structures, it is possible to reach all captured outer variables through an instance of `__Local2`, and the code of the anonymous function can thus be implemented as an instance method of that class.
 
 ```csharp
 class Test
@@ -5324,12 +4946,13 @@ where_clause
     ;
 
 join_clause
-    : 'join' type? identifier 'in' expression 'on' expression 'equals' expression
+    : 'join' type? identifier 'in' expression 'on' expression
+      'equals' expression
     ;
 
 join_into_clause
-    : 'join' type? identifier 'in' expression 'on' expression 'equals' expression
-      'into' identifier
+    : 'join' type? identifier 'in' expression 'on' expression
+      'equals' expression 'into' identifier
     ;
 
 orderby_clause
@@ -5569,7 +5192,8 @@ Q
 is translated into
 
 ```csharp
-from * in ( «e1» ) . SelectMany( «x1» => «e2» , ( «x1» , «x2» ) => new { «x1» , «x2» } )  
+from * in («e1») . SelectMany( «x1» => «e2» ,
+                              ( «x1» , «x2» ) => new { «x1» , «x2» } )
 Q
 ```
 
@@ -5631,7 +5255,8 @@ from * in ( «e» ) . Select ( «x» => new { «x» , «y» = «f» } )
 > is translated into
 >
 > ```csharp
-> from * in (orders).Select(o => new { o, t = o.Details.Sum(d => d.UnitPrice * d.Quantity) })
+> from * in (orders).Select(
+>     o => new { o, t = o.Details.Sum(d => d.UnitPrice * d.Quantity) })
 > where t >= 1000
 > select new { o.OrderID, Total = t }
 > ```
@@ -5709,7 +5334,8 @@ is translated into
 
 ```csharp
 from * in ( «e1» ) . Join(  
-«e2» , «x1» => «k1» , «x2» => «k2» , ( «x1» , «x2» ) => new { «x1» , «x2» })  
+«e2» , «x1» => «k1» , «x2» => «k2» ,
+( «x1» , «x2» ) => new { «x1» , «x2» })  
 ...
 ```
 
@@ -5724,7 +5350,8 @@ select «v»
 is translated into
 
 ```csharp
-( «e1» ) . GroupJoin( «e2» , «x1» => «k1» , «x2» => «k2» , ( «x1» , «g» ) => «v» )
+( «e1» ) . GroupJoin( «e2» , «x1» => «k1» , «x2» => «k2» ,
+                     ( «x1» , «g» ) => «v» )
 ```
 
 A `join into` clause followed by a query body clause
@@ -5739,7 +5366,7 @@ is translated into
 
 ```csharp
 from * in ( «e1» ) . GroupJoin(  
-   «e2» , «x1» => «k1» , «x2» => «k2» , ( «x1» , «g» ) => new { «x1» , «g» })  
+   «e2» , «x1» => «k1» , «x2» => «k2» , ( «x1» , «g» ) => new { «x1» , «g» })
 ...
 ```
 
@@ -5971,7 +5598,8 @@ In the translation steps described above, transparent identifiers are always int
 >
 > ```csharp
 > customers
->     .Join(orders, c => c.CustomerID, o => o.CustomerID, (c, o) => new { c, o })
+>     .Join(orders, c => c.CustomerID,
+>         o => o.CustomerID, (c, o) => new { c, o })
 >     .Join(details, * => o.OrderID, d => d.OrderID, (*, d) => new { *, d })
 >     .Join(products, * => d.ProductID, p => p.ProductID,
 >         (*, p) => new { c.Name, o.OrderDate, p.ProductName })
@@ -5981,7 +5609,8 @@ In the translation steps described above, transparent identifiers are always int
 >
 > ```csharp
 > customers
->     .Join(orders, c => c.CustomerID, o => o.CustomerID, (c, o) => new { c, o })
+>     .Join(orders, c => c.CustomerID,
+>         o => o.CustomerID, (c, o) => new { c, o })
 >     .Join(details, x => x.o.OrderID, d => d.OrderID, (x, d) => new { x, d })
 >     .Join(products, y => y.d.ProductID, p => p.ProductID,
 >         (y, p) => new { y.x.c.Name, y.x.o.OrderDate, p.ProductName })
@@ -6008,7 +5637,8 @@ class C<T> : C
 {
     public C<T> Where(Func<T,bool> predicate);
     public C<U> Select<U>(Func<T,U> selector);
-    public C<V> SelectMany<U,V>(Func<T,C<U>> selector, Func<T,U,V> resultSelector);
+    public C<V> SelectMany<U,V>(Func<T,C<U>> selector,
+        Func<T,U,V> resultSelector);
     public C<V> Join<U,K,V>(C<U> inner, Func<T,K> outerKeySelector,
         Func<U,K> innerKeySelector, Func<T,U,V> resultSelector);
     public C<V> GroupJoin<U,K,V>(C<U> inner, Func<T,K> outerKeySelector,
@@ -6016,7 +5646,8 @@ class C<T> : C
     public O<T> OrderBy<K>(Func<T,K> keySelector);
     public O<T> OrderByDescending<K>(Func<T,K> keySelector);
     public C<G<K,T>> GroupBy<K>(Func<T,K> keySelector);
-    public C<G<K,E>> GroupBy<K,E>(Func<T,K> keySelector, Func<T,E> elementSelector);
+    public C<G<K,E>> GroupBy<K,E>(Func<T,K> keySelector,
+        Func<T,E> elementSelector);
 }
 
 class O<T> : C<T>
@@ -6074,9 +5705,7 @@ The `+=` and `-=` operators with an event access expression as the left operand
 
 The assignment operators are right-associative, meaning that operations are grouped from right to left.
 
-> *Example*: An expression of the form `a = b = c` is evaluated as `a = (b = c)`.
->
-> *end example*
+> *Example*: An expression of the form `a = b = c` is evaluated as `a = (b = c)`. *end example*
 
 ### 11.18.2 Simple assignment
 
@@ -6212,9 +5841,7 @@ An operation of the form `x «op»= y` is processed by applying binary operato
 
 The term “evaluated only once” means that in the evaluation of `x «op» y`, the results of any constituent expressions of `x` are temporarily saved and then reused when performing the assignment to `x`.
 
-> *Example*: In the assignment `A()[B()] += C()`, where `A` is a method returning `int[]`, and `B` and `C` are methods returning `int`, the methods are invoked only once, in the order `A`, `B`, `C`.
->
-> *end example*
+> *Example*: In the assignment `A()[B()] += C()`, where `A` is a method returning `int[]`, and `B` and `C` are methods returning `int`, the methods are invoked only once, in the order `A`, `B`, `C`. *end example*
 
 When the left operand of a compound assignment is a property access or indexer access, the property or indexer shall have both a get accessor and a set accessor. If this is not the case, a binding-time error occurs.
 
